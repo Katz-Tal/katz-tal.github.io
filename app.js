@@ -22,7 +22,8 @@
 
   function yearsSince(d) { return (Date.now() - d) / 31557600000; }
 
-  var uptimeEl = doc.getElementById('uptime');
+  var upYmd = doc.getElementById('upYmd');
+  var upClock = doc.getElementById('upClock');
   var kpiYears = doc.getElementById('kpiYears');
 
 
@@ -43,18 +44,22 @@
   function pad2(n) { return (n < 10 ? '0' : '') + n; }
 
   function renderUptime() {
-    if (!uptimeEl) return;
+    if (!upYmd) return;
     // y/m/d are calendar-accurate; h:m:s are the elapsed remainder, derived
     // from the same delta rather than read off the visitor's clock. The
     // anchor is a midnight date, so the remainder does coincide with local
     // time-of-day — it is still elapsed time, just numerically identical.
     var b = breakdown(START, new Date());
     var ms = Date.now() - START;
-    var txt = b.y + 'y ' + b.mo + 'm ' + b.d + 'd  ' +
-      pad2(Math.floor(ms / 3600000) % 24) + ':' +
-      pad2(Math.floor(ms / 60000) % 60) + ':' +
-      pad2(Math.floor(ms / 1000) % 60);
-    if (txt !== lastUptime) { uptimeEl.textContent = txt; lastUptime = txt; }
+    var ymd = b.y + 'y ' + b.mo + 'm ' + b.d + 'd';
+    var clock = '  ' + pad2(Math.floor(ms / 3600000) % 24) + ':' +
+      pad2(Math.floor(ms / 60000) % 60) + ':' + pad2(Math.floor(ms / 1000) % 60);
+    var txt = ymd + clock;
+    if (txt !== lastUptime) {
+      upYmd.textContent = ymd;
+      if (upClock) upClock.textContent = clock;
+      lastUptime = txt;
+    }
   }
   renderUptime();
   upTimer = setInterval(renderUptime, 1000);   // ticks regardless of reduced-motion: a frozen clock reads as broken

@@ -575,3 +575,65 @@ kbd {
   .mh-meta > div { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .mh-meta dt { letter-spacing: .1em; }
 }
+
+/* ─── print ──────────────────────────────────────────────────
+   Browsers drop backgrounds when printing but honour authored text
+   colour, so a dark site prints as near-blank paper — white headings
+   on white. Everything below inverts to ink on paper and strips the
+   interface, leaving the document a recruiter actually wanted. */
+
+@media print {
+  :root {
+    --bg: #fff; --bg2: #fff; --panel: #fff;
+    --ink: #111; --bright: #000; --muted: #555; --dim: #777;
+    --line: #bbb; --signal: #000; --signal2: #000;
+  }
+
+  html, body { background: #fff !important; color: #111 !important; }
+
+  /* interface has no meaning on paper */
+  #fx, #ledger, #rail, #nav, #ptr, #keys,
+  .wide-note, .kb-hint, .skip-link, #console { display: none !important; }
+
+  body { padding: 0 !important; font: 400 10.5pt/1.5 var(--sans); }
+  #app { max-width: none; padding: 0; }
+
+  .masthead { display: block; padding: 0 0 .5rem; }
+  .masthead h1 { color: #000 !important; font-size: 20pt; margin-bottom: .2rem; }
+  .mh-role { font-size: 10pt; color: #333; }
+  .gbrand span { color: #000 !important; }   /* brand colours print badly */
+
+  .mh-meta { margin-top: .4rem; }
+  .mh-meta > div { grid-template-columns: 5rem 1fr; padding: .12rem 0; border-top: 0; }
+  .mh-meta dt, .mh-meta dd { font-size: 9pt; color: #444; }
+  .mh-meta dd.live { color: #000 !important; }
+  #upClock { display: none; }   /* a live clock means nothing on paper */
+
+  /* tighter rhythm so a full CV lands in fewer pages */
+  .panel { padding-top: .55rem; }
+  .mission ul { margin-top: .25rem; }
+  .mission li { margin: .12rem 0; }
+  .rows .row { padding: .3rem 0; }
+
+  .panel { padding: .7rem 0 0; }
+  .sec-head { border-bottom: 1px solid #999; margin-bottom: .5rem; padding-bottom: .15rem; }
+  .sec-head h2 { color: #000 !important; font-size: 8.5pt; letter-spacing: .16em; }
+
+  h3, .mission h3, .row .what b { color: #000 !important; }
+  .mission h3 { font-size: 11.5pt; }
+
+  /* keep an entry on one page */
+  .mission, .row, .card { break-inside: avoid; page-break-inside: avoid; }
+
+  .mission { border-top: 1px solid #ddd; padding: .45rem 0; }
+  .sev-tag { border: 1px solid #666; color: #000 !important; }
+  .card { border-left: 2px solid #ccc; }
+  .stats { border-top: 1px solid #ddd; color: #444; }
+
+  a { color: #000 !important; text-decoration: underline; }
+  /* a printed link is useless without its destination */
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: .8em; color: #555; }
+  a[href^="mailto:"]::after { content: ""; }
+
+  .foot { border-top: 1px solid #999; margin-top: .8rem; }
+}
