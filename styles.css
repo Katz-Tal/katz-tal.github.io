@@ -482,8 +482,24 @@ kbd {
    collapse and each row stacks label-over-value. */
 
 @media (max-width: 46rem) {
-  #app { padding-inline: 1.15rem; }
+  /* Reclaim horizontal space. Nested indents (#app padding, then the
+     card's rule + padding, then the list's padding) were eating ~19% of
+     a 360px screen before a single character, leaving ~36 characters
+     per line against a comfortable 45-75. */
+  #app { padding-inline: 1rem; }
+  .card { padding-left: .85rem; border-left-width: 2px; }
+  .mission ul { padding-left: 1rem; }
+  .bullets { padding-left: 1rem; }
+  .term-out { font-size: .78rem; padding: .9rem .85rem; }
+  .term-in { padding: .7rem .85rem; }
   .masthead { padding-top: 3rem; gap: 1.5rem; }
+  /* mono meta lines were filling the width edge-to-edge with no breathing
+     room; smaller here so they wrap instead of hugging the boundary */
+  .mh-role { font-size: .86rem; }
+  .scope { font-size: .7rem; line-height: 1.6; }
+  .stats { font-size: .76rem; gap: .3rem 1rem; }
+  .sec-head h2 { font-size: .68rem; letter-spacing: .16em; }
+  .rail-sec { display: none; }
 
   /* alert feed: severity and dates share line one, content runs full width */
   .mission {
@@ -513,14 +529,13 @@ kbd {
   .keys-panel dl > div { grid-template-columns: minmax(0, 1fr); gap: .15rem; }
   #nav { gap: .3rem 1.15rem; }
   .prompt { font-size: .68rem; }
-  .term-out { padding: .9rem 1rem; font-size: .74rem; }
-  .shell-in, .term-in { padding: .7rem 1rem; }
 }
 
 @media (max-width: 26rem) {
-  #app { padding-inline: .9rem; }
+  #app { padding-inline: .8rem; }
+  .card { padding-left: .7rem; }
+  .mission ul, .bullets { padding-left: .9rem; }
   .masthead h1 { font-size: clamp(1.5rem, 9vw, 2rem); }
   .mh-meta > div { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .mh-meta dt { letter-spacing: .1em; }
-  .term-out { font-size: .7rem; }
 }
