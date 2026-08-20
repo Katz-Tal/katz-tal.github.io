@@ -200,6 +200,17 @@ a, #nav button, .keys-close { -webkit-tap-highlight-color: transparent; }
 .mh-role { margin: .55rem 0 0; font: 400 .95rem/1.5 var(--mono); color: var(--muted); }
 .sep { color: var(--dim); }
 
+/* Google wordmark in its own brand colours. This is the one deliberate
+   exception to the single-accent rule — it names an employer rather than
+   signalling anything, so it is kept to one word in one place. All four
+   hexes clear 4.5:1 on --bg (5.04 to 11.59), so no substitutes needed.
+   role="img" + aria-label keeps it announced as one word, not six letters. */
+.gbrand { white-space: nowrap; }
+.g-b { color: #4285F4; }
+.g-r { color: #EA4335; }
+.g-y { color: #FBBC05; }
+.g-g { color: #34A853; }
+
 .mh-meta { margin: 0; display: grid; gap: 0; }
 .mh-meta > div {
   display: grid; grid-template-columns: 5.5rem minmax(0, 1fr);
