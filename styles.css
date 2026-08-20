@@ -240,6 +240,26 @@ a, #nav button, .keys-close { -webkit-tap-highlight-color: transparent; }
 #nav button.active { color: var(--signal); }
 .no-js #nav { display: none; }
 
+/* ─── wide-screen note ───────────────────────────────────────
+   Shown only on narrow viewports. Deliberately framed as an invitation
+   rather than "best viewed on desktop" — the mobile layout works, and
+   apologising for it on a hiring document reads as unfinished. This
+   names what is genuinely absent instead. */
+
+.wide-note { display: none; }
+
+@media (max-width: 62rem) {
+  .wide-note {
+    display: block;
+    margin: 1.25rem 0 0;
+    padding: .7rem .85rem;
+    border-left: 2px solid var(--line);
+    font: 400 .78rem/1.65 var(--mono);
+    color: var(--muted);
+  }
+  .wn-mark { color: var(--signal); margin-right: .4rem; }
+}
+
 /* ─── section markers ────────────────────────────────────────
    A table caption, not a display headline: small label plus hairline,
    matching the row grammar of the content beneath it. */
