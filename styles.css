@@ -474,9 +474,53 @@ kbd {
   #ptr { display: none; }
 }
 
-@media (max-width: 34rem) {
-  #app { padding-inline: 1.1rem; }
-  .masthead { padding-top: 3rem; }
-  .mh-meta > div { grid-template-columns: 4.5rem minmax(0, 1fr); gap: .75rem; }
-  .prompt { font-size: .7rem; }
+/* ─── mobile ─────────────────────────────────────────────────
+   The table grids carry fixed first columns (2.75rem + 9.5rem for
+   alerts, 14rem for ops and tools). That is right on a wide screen
+   and unusable on a phone — at 375px it left the content column
+   ~80px wide, and at 320px ~22px. Below 46rem the fixed columns
+   collapse and each row stacks label-over-value. */
+
+@media (max-width: 46rem) {
+  #app { padding-inline: 1.15rem; }
+  .masthead { padding-top: 3rem; gap: 1.5rem; }
+
+  /* alert feed: severity and dates share line one, content runs full width */
+  .mission {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: .3rem .75rem;
+    padding: 1.05rem 0;
+  }
+  .sev-tag { grid-column: 1; grid-row: 1; }
+  .m-date { grid-column: 2; grid-row: 1; justify-self: start; }
+  .mission h3 { grid-column: 1 / -1; grid-row: 2; margin-top: .2rem; }
+  .scope { grid-column: 1 / -1; grid-row: 3; }
+  .mission ul { grid-column: 1 / -1; grid-row: 4; margin-top: .55rem; }
+  .org { display: block; margin-top: .1rem; }
+
+  /* every row grid stacks: label above value */
+  .ops .row,
+  .tools .row,
+  .creds .row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: .25rem;
+  }
+  .tools .what { letter-spacing: .12em; }
+  .ops .stack { grid-column: 1; }
+
+  .stats { gap: .35rem 1.25rem; }
+  .mh-meta > div { grid-template-columns: 4.75rem minmax(0, 1fr); gap: .8rem; }
+  .keys-panel dl > div { grid-template-columns: minmax(0, 1fr); gap: .15rem; }
+  #nav { gap: .3rem 1.15rem; }
+  .prompt { font-size: .68rem; }
+  .term-out { padding: .9rem 1rem; font-size: .74rem; }
+  .shell-in, .term-in { padding: .7rem 1rem; }
+}
+
+@media (max-width: 26rem) {
+  #app { padding-inline: .9rem; }
+  .masthead h1 { font-size: clamp(1.5rem, 9vw, 2rem); }
+  .mh-meta > div { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .mh-meta dt { letter-spacing: .1em; }
+  .term-out { font-size: .7rem; }
 }
