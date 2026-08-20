@@ -417,6 +417,110 @@
     });
   }());
 
+  /* ── background: drifting security graph ─────────────────────
+     Nodes drift slowly and grow edges to whichever neighbours are close
+     enough, dropping them again as they separate. Occasionally a node
+     flares, the way one asset lights up when a detection fires on it.
+
+     Node spacing is deliberately kept well inside LINK — at lower
+     densities the mean nearest-neighbour distance lands right at the
+     link threshold, every pair sits at alpha zero, and the mesh never
+     visibly forms. O(n^2) edge test, but n is capped low enough that it
+     stays trivial. */
+
+  (function fx() {
+    var cv = doc.getElementById('fx');
+    if (!cv || reduced) return;
+
+    var ctx = cv.getContext('2d');
+    var nodes = [], w = 0, h = 0, raf = null;
+    var LINK = 190;
+    var MAX_NODES = 92;
+
+    function size() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = cv.clientWidth; h = cv.clientHeight;
+      cv.width = w * dpr; cv.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      seed();
+    }
+
+    function seed() {
+      var n = Math.max(14, Math.min(MAX_NODES, Math.round(w * h / 13500)));
+      nodes = [];
+      for (var i = 0; i < n; i++) {
+        nodes.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.22,
+          vy: (Math.random() - 0.5) * 0.22,
+          hub: Math.random() < 0.16,
+          flare: 0
+        });
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.lineWidth = 1;
+      for (var i = 0; i < nodes.length; i++) {
+        var a = nodes[i];
+        for (var j = i + 1; j < nodes.length; j++) {
+          var b = nodes[j];
+          var dx = a.x - b.x, dy = a.y - b.y;
+          var d2 = dx * dx + dy * dy;
+          if (d2 > LINK * LINK) continue;
+          var t = 1 - Math.sqrt(d2) / LINK;
+          var alpha = t * t * 0.5;
+          var hot = a.flare > 0 || b.flare > 0;
+          ctx.strokeStyle = hot
+            ? 'rgba(255,59,48,' + (alpha + 0.2).toFixed(3) + ')'
+            : 'rgba(255,255,255,' + alpha.toFixed(3) + ')';
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }
+
+      for (var k = 0; k < nodes.length; k++) {
+        var p = nodes[k];
+
+        p.x += p.vx; p.y += p.vy;
+        // wrap rather than bounce, so the field never develops visible walls
+        if (p.x < -20) p.x = w + 20; else if (p.x > w + 20) p.x = -20;
+        if (p.y < -20) p.y = h + 20; else if (p.y > h + 20) p.y = -20;
+
+        if (p.flare > 0) p.flare -= 0.012;
+        else if (Math.random() < 0.00035) p.flare = 1;
+
+        var r = p.hub ? 2.1 : 1.3;
+        if (p.flare > 0) {
+          ctx.fillStyle = 'rgba(255,59,48,' + (0.35 + p.flare * 0.6).toFixed(3) + ')';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, r + p.flare * 3.4, 0, 6.2832);
+          ctx.fill();
+        }
+        ctx.fillStyle = p.hub ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.55)';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r, 0, 6.2832);
+        ctx.fill();
+      }
+
+      raf = requestAnimationFrame(draw);
+    }
+
+    function start() { if (!raf) raf = requestAnimationFrame(draw); }
+    function stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
+
+    size(); start();
+
+    var rt = null;
+    window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(size, 150); });
+    doc.addEventListener('visibilitychange', function () { doc.hidden ? stop() : start(); });
+  }());
+
   /* ── policy ledger ───────────────────────────────────────────
      Renders the page's actual Content-Security-Policy by parsing the
      meta tag rather than restating it, so the display cannot drift
