@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!--
+  CSP is duplicated here and in `_headers`. KEEP THEM IN SYNC.
+  GitHub Pages cannot send response headers, so this meta tag is all we get.
+  `connect-src 'none'` is load-bearing for the shell's exfil demo — see the
+  invariant comment in app.js before relaxing it.
+-->
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+
+<title>T4L_K4TZ // SEC-ENG</title>
+<meta name="description" content="Tal Katz, Senior Security Engineer at Wiz (Google). Detection engineering, security automation, incident response. Interactive resume.">
+
+<meta property="og:type" content="profile">
+<meta property="og:title" content="Tal Katz // Senior Security Engineer">
+<meta property="og:description" content="Detection engineering, security automation and incident response. An interactive resume.">
+<meta property="og:url" content="https://talkatz.com/">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://talkatz.com/">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230A0A0B'/%3E%3Ctext x='16' y='23' font-family='monospace' font-weight='bold' font-size='17' fill='%23FF3B30' text-anchor='middle'%3ETK%3C/text%3E%3C/svg%3E">
+<script src="app.js" defer></script>
+
+<!--
+  Nice — you read the source. That is the correct instinct.
+  aHR0cHM6Ly90YWxrYXR6LmNvbSAtLSBydW4gYGRldGVjdGAgaW4gdGhlIHNoZWxsLg==
+-->
+</head>
+<body>
+
+<aside id="ledger" aria-hidden="true">
+  <p class="lg-h">content-security-policy</p>
+  <ul class="lg-dir" id="lgDir"></ul>
+  <p class="lg-h">refusals <span id="lgCount">0</span></p>
+  <ul class="lg-log" id="lgLog"><li class="lg-none">none yet</li></ul>
+</aside>
+
+<div id="ptr" aria-hidden="true">
+  <span class="ptr-mark"></span>
+  <div class="ptr-hud">
+    <canvas id="ptrSpark" width="76" height="20"></canvas>
+    <div class="ptr-row"><span>pid</span><b id="ptrPid">----</b></div>
+    <div class="ptr-row"><span>fps</span><b id="ptrFps">--</b></div>
+    <div class="ptr-row"><span>vel</span><b id="ptrVel">0/s</b></div>
+  </div>
+</div>
+
+
+
+<div id="keys" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" hidden>
+  <div class="keys-panel">
+    <h2>Keyboard</h2>
+    <dl>
+      <div><dt><kbd>j</kbd> <kbd>k</kbd></dt><dd>next / previous section</dd></div>
+      <div><dt><kbd>1</kbd>&ndash;<kbd>6</kbd></dt><dd>jump to section</dd></div>
+      <div><dt><kbd>g</kbd><kbd>g</kbd></dt><dd>top</dd></div>
+      <div><dt><kbd>G</kbd></dt><dd>bottom</dd></div>
+      <div><dt><kbd>/</kbd></dt><dd>focus the console</dd></div>
+      <div><dt><kbd>?</kbd></dt><dd>this panel</dd></div>
+      <div><dt><kbd>Esc</kbd></dt><dd>close / leave the console</dd></div>
+    </dl>
+    <button type="button" id="keysClose" class="keys-close">close</button>
+  </div>
+</div>
+
+<div id="rail" aria-hidden="true">
+  <span class="rail-ord" id="railOrd">01</span>
+  <span class="rail-sec" id="railSec">overview</span>
+</div>
+
+<a href="#overview" class="skip-link">Skip to content</a>
+
+<div id="app">
+
+<header class="masthead">
+  <div class="mh-id">
+    <h1>Tal Katz</h1>
+    <p class="mh-role">Senior Security Engineer <span class="sep">·</span> Wiz (Google)</p>
+  </div>
+
+  <dl class="mh-meta">
+    <div><dt>on-call</dt><dd class="live">active</dd></div>
+    <div><dt>tier</dt><dd>3 <span class="sep">·</span> cloud security</dd></div>
+    <div><dt>uptime</dt><dd id="uptime" class="num">7y 9m</dd></div>
+    <div><dt>contact</dt><dd>
+      <a class="mail" id="mail" href="#" data-u="hi" data-d="talkatz.com">email</a>
+      <span class="sep">·</span>
+      <a href="https://www.linkedin.com/in/tal-katz-283262159" rel="me noopener">linkedin</a>
+      <noscript><a href="mailto:hi&#64;talkatz.com">hi&#64;talkatz.com</a></noscript>
+    </dd></div>
+  </dl>
+</header>
+
+<nav id="nav" aria-label="Sections">
+  <button type="button" data-go="overview" class="active">overview</button>
+  <button type="button" data-go="alerts">alerts</button>
+  <button type="button" data-go="detections">detections</button>
+  <button type="button" data-go="coverage">coverage</button>
+  <button type="button" data-go="creds">credentials</button>
+  <button type="button" data-go="console">console</button>
+</nav>
+
+
+<main>
+
+<!-- ═════ 01 OVERVIEW ═════ -->
+<section id="overview" class="panel">
+  <div class="sec-head"><h2>overview</h2><span class="rule"></span></div>
+
+  <div class="card intro">
+    <p>Senior Security Engineer at <b>Wiz</b>, now part of Google. I build detection
+    and automation — turning alerts into code, and code into things that page a human
+    only when a human is actually needed.</p>
+    <p>Seven years from IT support to security engineering: helpdesk, then threat
+    operations, then security engineering. I have run a SOC alone for six months, cut
+    alert MTTR by a fifth with automation, and moved a SIEM into version control.</p>
+  </div>
+
+  <p class="stats">
+    <span><b id="kpiYears">7+</b> years in tech</span>
+    <span><b>2020</b> pivoted to security</span>
+    <span><b>GOSI</b> SANS certified</span>
+    <span><b>&minus;20%</b> alert MTTR</span>
+  </p>
+</section>
+
+<!-- ═════ 02 ALERT FEED ═════ -->
+<section id="alerts" class="panel">
+  <div class="sec-head"><h2>alerts</h2><span class="rule"></span></div>
+
+  <article class="mission">
+    <div class="m-top">
+      <h3>Senior Security Engineer <span class="org">Wiz · Google</span></h3>
+      <div class="m-meta"><span class="sev-tag s-p1">P1</span><span class="m-date">2024-08 → present</span></div>
+    </div>
+    <p class="scope"><span>scope</span>cloud security &middot; detection engineering</p>
+    <ul>
+      <li>Promoted from Security Engineer to Senior.</li>
+      <li class="todo">TODO — three to five lines on what you own here. Scope and ownership only; no internal tooling, no detection logic, no incident specifics.</li>
+    </ul>
+  </article>
+
+  <article class="mission">
+    <div class="m-top">
+      <h3>Security Operations Engineer <span class="org">Axonius</span></h3>
+      <div class="m-meta"><span class="sev-tag s-p2">P2</span><span class="m-date">2022-09 → 2024-08</span></div>
+    </div>
+    <p class="scope"><span>scope</span>detection-as-code &middot; SOAR platform</p>
+    <ul>
+      <li>Led the Tines SOAR implementation from scratch — 10+ production workflows.</li>
+      <li>Cut alert MTTR by 20% with an automated user-interaction system.</li>
+      <li>Ran Panther as a code-managed SIEM: detections in version control, GitHub Actions for CI/CD.</li>
+      <li>Built security infrastructure with Terraform.</li>
+      <li>Code review, security testing, incident and vulnerability response.</li>
+    </ul>
+  </article>
+
+  <article class="mission">
+    <div class="m-top">
+      <h3>Security Operations Engineer <span class="org">Cellebrite</span></h3>
+      <div class="m-meta"><span class="sev-tag s-p2">P2</span><span class="m-date">2021-11 → 2022-09</span></div>
+    </div>
+    <p class="scope"><span>scope</span>700+ users &middot; multi-region</p>
+    <ul>
+      <li>Designed, implemented and maintained secure systems and networks.</li>
+      <li>Ran security assessments and audits, then drove the remediation.</li>
+      <li>Protected data for 700+ users across multiple geographies.</li>
+      <li>Trained and mentored junior analysts.</li>
+    </ul>
+  </article>
+
+  <article class="mission">
+    <div class="m-top">
+      <h3>Threat Operations Analyst <span class="org">Cellebrite</span></h3>
+      <div class="m-meta"><span class="sev-tag s-p3">P3</span><span class="m-date">2020-11 → 2021-11</span></div>
+    </div>
+    <p class="scope"><span>scope</span>sole coverage &middot; 6 months</p>
+    <ul>
+      <li>Sole team member covering all threat-operations activity for six months.</li>
+      <li>QRadar in depth: DSM editor, rule creation, custom action scripts, automation.</li>
+      <li>Python webhook server feeding events into the SIEM over syslog.</li>
+      <li>Automated anonymised-traffic blocking at the WAF edge.</li>
+      <li>Onboarded and trained two new analysts.</li>
+    </ul>
+  </article>
+
+  <article class="mission">
+    <div class="m-top">
+      <h3>IT Support Specialist <span class="org">Cellebrite</span></h3>
+      <div class="m-meta"><span class="sev-tag s-p4">P4</span><span class="m-date">2018-11 → 2020-11</span></div>
+    </div>
+    <p class="scope"><span>scope</span>800 endpoints worldwide</p>
+    <ul>
+      <li>Kept 800 employees running worldwide across macOS and Windows.</li>
+      <li>Full Active Directory and Azure AD administration.</li>
+      <li>Led the Webex rollout — 32 conference rooms worldwide.</li>
+      <li>Python automations for password expiry, connectivity testing and alerting.</li>
+    </ul>
+  </article>
+</section>
+
+<!-- ═════ 03 DETECTIONS ═════ -->
+<section id="detections" class="panel">
+  <div class="sec-head"><h2>detections</h2><span class="rule"></span></div>
+  <p class="sec-note">Things I built and run.</p>
+
+  <div class="rows ops">
+      <div class="row op-row"><span class="what"><b>Tines SOAR Platform</b></span><span class="desc">Built from zero. 10+ production workflows covering triage, enrichment and user interaction.</span><span class="stack"><span>Tines</span><span>Python</span><span>Webhooks</span></span></div>
+      <div class="row op-row"><span class="what"><b>Detection-as-Code</b></span><span class="desc">Panther SIEM managed entirely from a Git repo — detections reviewed, versioned and shipped through GitHub Actions.</span><span class="stack"><span>Panther</span><span>GitHub Actions</span><span>YAML</span></span></div>
+      <div class="row op-row"><span class="what"><b>MTTR Automation</b></span><span class="desc">Automated user-interaction loop that confirms or dismisses suspicious activity with the human involved. Cut alert MTTR by 20%.</span><span class="stack"><span>Tines</span><span>Slack</span><span>SIEM</span></span></div>
+      <div class="row op-row"><span class="what"><b>Syslog Webhook Bridge</b></span><span class="desc">Python web server receiving vendor webhooks and forwarding them into the SIEM over syslog, so sources without native integrations still land in one place.</span><span class="stack"><span>Python</span><span>Syslog</span><span>QRadar</span></span></div>
+      <div class="row op-row"><span class="what"><b>WAF Auto-Blocking</b></span><span class="desc">Scheduled job pulling anonymised-traffic exit nodes and pushing them to the WAF edge automatically.</span><span class="stack"><span>Python</span><span>Imperva</span><span>Threat intel</span></span></div>
+      <div class="row op-row"><span class="what"><b>Security Infra as Code</b></span><span class="desc">Terraform modules standing up the infrastructure behind security tooling, reproducibly.</span><span class="stack"><span>Terraform</span><span>AWS</span></span></div>
+      <div class="row op-row"><span class="what"><b>AI Security Assistant <span class="tag-os">open source</span></b></span><span class="desc">An assistant wiring Axonius asset context into Panther detections, so an analyst gets the asset story without leaving the alert.</span><span class="stack"><span>Python</span><span>Axonius</span><span>Panther</span></span></div>
+      <div class="row op-row"><span class="what"><b>This Site</b></span><span class="desc">Three hand-written files, no framework, no build step, no third-party requests. Strict CSP. Type <code>detect</code> in the terminal.</span><span class="stack"><span>Vanilla JS</span><span>CSP</span><span>No deps</span></span></div>
+  </div>
+</section>
+
+<!-- ═════ 04 COVERAGE ═════ -->
+<section id="coverage" class="panel">
+  <div class="sec-head"><h2>coverage</h2><span class="rule"></span></div>
+
+  <div class="rows tools">
+      <div class="row"><span class="what">detection &amp; response</span><span class="desc">Panther · IBM QRadar · CrowdStrike · Varonis · incident response</span></div>
+      <div class="row"><span class="what">automation &amp; code</span><span class="desc">Python · Bash · Tines SOAR · SQL · Terraform</span></div>
+      <div class="row"><span class="what">cloud &amp; platform</span><span class="desc">AWS · Wiz · Linux · Active Directory / Entra · GitHub Actions</span></div>
+      <div class="row"><span class="what">network &amp; edge</span><span class="desc">Check Point · F5 · Imperva WAF · Forcepoint · Netskope</span></div>
+  </div>
+</section>
+
+<!-- ═════ 05 CREDENTIALS ═════ -->
+<section id="creds" class="panel">
+  <div class="sec-head"><h2>credentials</h2><span class="rule"></span></div>
+
+  <div class="rows creds">
+      <div class="row"><span class="yr">2024</span><span class="what"><b>GIAC OSINT</b> <span class="by">GOSI · SANS</span></span></div>
+      <div class="row"><span class="yr">2022</span><span class="what"><b>Ethical Hacker</b> <span class="by">See Security College · top of cohort</span></span></div>
+      <div class="row"><span class="yr">2019</span><span class="what"><b>Python Master</b> <span class="by">iNT Institute of Innovation &amp; Technology</span></span></div>
+      <div class="row"><span class="yr">2019</span><span class="what"><b>MCSA + CCNA</b> <span class="by">Network management &amp; cloud — John Bryce</span></span></div>
+      <div class="row"><span class="yr">2015</span><span class="what"><b>Combat Medic</b> <span class="by">Israel Defense Forces</span></span></div>
+  </div>
+</section>
+
+<!-- ═════ 06 CONSOLE ═════ -->
+<section id="console" class="panel">
+  <div class="sec-head"><h2>console</h2><span class="rule"></span></div>
+  <p class="sec-note">A real shell. Type <code>help</code>. Some commands are not in the list.</p>
+
+  <div class="term">
+    <div class="term-bar"><span class="tb-name">tal@talkatz — zsh</span></div>
+    <div class="term-out" id="shellOut" tabindex="0" role="log" aria-live="polite" aria-label="Shell output"></div>
+    <div class="term-in">
+      <span class="prompt" aria-hidden="true">tal@talkatz:~$</span>
+      <label for="cmd" class="visually-hidden">Shell command</label>
+      <input id="cmd" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="help">
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="foot-links">
+    <a class="mail" id="mailFoot" href="#" data-u="hi" data-d="talkatz.com">email</a>
+    <a href="https://www.linkedin.com/in/tal-katz-283262159" rel="me noopener">LinkedIn</a>
+    <noscript><a href="mailto:hi&#64;talkatz.com">hi&#64;talkatz.com</a></noscript>
+  </div>
+  <p class="kb-hint">Press <kbd>?</kbd> for keyboard shortcuts.</p>
+  <p>Hand-written. No frameworks, no trackers, no third-party requests.</p>
+</footer>
+
+</div>
+</body>
+</html>

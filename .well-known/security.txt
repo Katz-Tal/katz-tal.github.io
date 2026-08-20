@@ -1,0 +1,7 @@
+# RFC 9116 — https://www.rfc-editor.org/rfc/rfc9116
+# The shell on this site advertises this path, so it should exist.
+
+Contact: mailto:hi@talkatz.com
+Preferred-Languages: en, he
+Canonical: https://talkatz.com/.well-known/security.txt
+Expires: 2027-08-16T00:00:00.000Z

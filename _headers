@@ -1,0 +1,27 @@
+# Security response headers.
+#
+# ─── READ THIS BEFORE ASSUMING THE SITE IS PROTECTED ───────────────────────
+# This file is INERT on GitHub Pages. GitHub Pages cannot send custom response
+# headers at all, so today none of the below is actually being served.
+#
+# It exists now so that migrating to Cloudflare Pages is a DNS change and
+# nothing else — Cloudflare Pages reads this file automatically on deploy.
+# Migration runbook: ~/.claude/plans/hi-i-want-to-immutable-charm.md §11
+#
+# The `.nojekyll` file in the repo root is what stops GitHub's Jekyll build
+# from silently dropping this file for having a leading underscore.
+#
+# ─── KEEP IN SYNC ──────────────────────────────────────────────────────────
+# The Content-Security-Policy below must match the <meta http-equiv> tag in
+# index.html, except for frame-ancestors — a meta CSP cannot express it.
+# If you change one, change the other.
+
+/*
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), usb=(), payment=(), interest-cohort=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
