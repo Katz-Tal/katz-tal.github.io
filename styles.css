@@ -247,6 +247,61 @@ a, #nav button, .keys-close { -webkit-tap-highlight-color: transparent; }
 .js .masthead.mh-enter h1 { animation: mhRise 380ms var(--ease-out) both; }
 .js .masthead.mh-enter .mh-role { animation: mhRise 380ms 70ms var(--ease-out) both; }
 
+/* ── welcome sequence ─────────────────────────────────────────
+   The page attests its own policy before it shows itself. Every row is
+   read from the live CSP meta tag, so this cannot claim a directive that
+   is not being enforced — the same rule the ledger follows.
+
+   The element ships hidden and only script reveals it. That is the way
+   round it has to be: an overlay shown by CSS and dismissed by JS seals
+   the page shut the moment anything upstream throws, whereas this way a
+   failure costs the animation and nothing else. Same rule the rest of
+   the page follows — content never depends on an animation running.
+
+   Reduced motion never starts it. Print drops it. */
+#welcome { display: none; }
+.js #welcome {
+  display: grid; position: fixed; inset: 0; z-index: 100;
+  place-items: center; align-content: center;
+  background: var(--bg);
+  transition: opacity var(--dur-3) var(--ease-out);
+}
+.js #welcome[hidden] { display: none; }
+.js #welcome.lifting { opacity: 0; pointer-events: none; }
+
+.wc-in { width: min(30rem, 84vw); }
+.wc-lede {
+  margin: 0 0 1.15rem; font: 400 .68rem/1 var(--mono);
+  letter-spacing: .24em; text-transform: uppercase; color: var(--muted);
+}
+.wc-rows { list-style: none; margin: 0; padding: 0; }
+.wc-rows li {
+  display: grid; grid-template-columns: .75rem minmax(0, 1fr) auto;
+  gap: .75rem; align-items: baseline;
+  padding: .4rem 0; border-top: 1px solid var(--line);
+  font: 400 .78rem/1.5 var(--mono);
+  opacity: 0; transform: translateY(6px);
+}
+.wc-rows li:first-child { border-top: 0; }
+.wc-rows li.on {
+  opacity: 1; transform: none;
+  transition: opacity var(--dur-2) var(--ease-out), transform var(--dur-2) var(--ease-out);
+}
+.wc-tick { color: var(--muted); transition: color var(--dur-2) var(--ease-out); }
+.wc-rows li.on .wc-tick { color: var(--signal); }
+.wc-k { color: var(--ink); }
+.wc-v { color: var(--muted); text-align: right; }
+.wc-out {
+  margin: 1.15rem 0 0; font: 400 .76rem/1.5 var(--mono);
+  color: var(--bright); opacity: 0;
+}
+.wc-out.on { opacity: 1; transition: opacity var(--dur-3) var(--ease-out); }
+.wc-skip {
+  position: fixed; left: 0; right: 0; bottom: 1.7rem; margin: 0;
+  text-align: center; font: 400 .66rem/1 var(--mono);
+  letter-spacing: .14em; color: var(--muted);
+}
+
 /* ─── nav ────────────────────────────────────────────────────
    Unnumbered and unboxed. The page is one continuous scroll, so a
    numbered tab strip would imply a sequence that no longer exists. */
@@ -611,7 +666,8 @@ kbd {
 
   /* interface has no meaning on paper */
   #fx, #ledger, #rail, #nav, #ptr, #keys,
-  .wide-note, .kb-hint, .skip-link, #console { display: none !important; }
+  .wide-note, .kb-hint, .skip-link, #console,
+  #welcome { display: none !important; }
 
   /* Content must never depend on an animation having run. A print fired
      before the reveal observer resolves — Cmd-P on a cold load, or any

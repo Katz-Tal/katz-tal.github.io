@@ -43,6 +43,19 @@
 </head>
 <body>
 
+<!-- Welcome sequence. Deliberately empty: every row is read from the live
+     Content-Security-Policy meta tag at runtime, so this can never advertise
+     a policy the page is not actually enforcing. Hidden without JS, skipped
+     under reduced motion, and absent from print. -->
+<div id="welcome" hidden aria-hidden="true">
+  <div class="wc-in">
+    <p class="wc-lede">verifying own policy</p>
+    <ul class="wc-rows" id="wcRows"></ul>
+    <p class="wc-out" id="wcOut"></p>
+  </div>
+  <p class="wc-skip">press any key, click or scroll to skip</p>
+</div>
+
 <canvas id="fx" aria-hidden="true"></canvas>
 
 <aside id="ledger" aria-hidden="true">

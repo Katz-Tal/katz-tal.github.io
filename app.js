@@ -15,6 +15,112 @@
   root.classList.remove('no-js');
   root.classList.add('js');
 
+  /* ── welcome sequence ────────────────────────────────────────
+     The page attests its own policy before it shows itself. Every row is
+     a directive read from the live Content-Security-Policy meta tag, and
+     the verdict line is computed from it rather than typed — if the
+     policy ever grows an unsafe- exception this says so instead of
+     congratulating itself. Same rule the ledger follows: never restate a
+     claim you can read.
+
+     About two seconds, abandoned at the first sign of impatience — any
+     key, click, touch or scroll lifts it at once. Plays once per tab; the
+     shell's `welcome` command replays it. The hard timer is armed before
+     any other work, because an overlay that sticks is a site that is
+     gone, and that must survive anything below it throwing. */
+
+  var WC_KEY = 'tk:welcomed';
+
+  function runWelcome(force) {
+    var el = doc.getElementById('welcome');
+    if (!el) return;
+
+    var bail = setTimeout(function () { el.hidden = true; }, 3600);
+
+    try {
+      if (reduced && !force) { clearTimeout(bail); el.hidden = true; return; }
+      if (!force) {
+        var seen = false;
+        try { seen = sessionStorage.getItem(WC_KEY) === '1'; } catch (e) {}
+        if (seen) { clearTimeout(bail); el.hidden = true; return; }
+        try { sessionStorage.setItem(WC_KEY, '1'); } catch (e) {}
+      }
+
+      var meta = doc.querySelector('meta[http-equiv="Content-Security-Policy"]');
+      var policy = meta ? meta.getAttribute('content') || '' : '';
+      var segs = policy.split(';');
+      var list = doc.getElementById('wcRows');
+      var out = doc.getElementById('wcOut');
+      if (!list || !out) { clearTimeout(bail); el.hidden = true; return; }
+
+      list.textContent = '';
+      out.textContent = '';
+      out.className = 'wc-out';
+      el.hidden = false;
+      el.classList.remove('lifting');
+
+      var items = [], i;
+      for (i = 0; i < segs.length; i++) {
+        var seg = segs[i].trim();
+        if (!seg) continue;
+        var sp = seg.indexOf(' ');
+        var li = doc.createElement('li');
+        var tick = doc.createElement('span');
+        tick.className = 'wc-tick';
+        tick.textContent = '\u25B8';
+        var k = doc.createElement('span');
+        k.className = 'wc-k';
+        k.textContent = sp < 0 ? seg : seg.slice(0, sp);
+        var v = doc.createElement('span');
+        v.className = 'wc-v';
+        v.textContent = sp < 0 ? '' : seg.slice(sp + 1);
+        li.appendChild(tick); li.appendChild(k); li.appendChild(v);
+        list.appendChild(li);
+        items.push(li);
+      }
+
+      var timers = [], done = false;
+
+      function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
+
+      function lift() {
+        if (done) return;
+        done = true;
+        clearTimeout(bail);
+        for (var t = 0; t < timers.length; t++) clearTimeout(timers[t]);
+        el.classList.add('lifting');
+        setTimeout(function () { el.hidden = true; el.classList.remove('lifting'); }, 340);
+        doc.dispatchEvent(new CustomEvent('tk:welcomed'));
+        doc.removeEventListener('keydown', lift, true);
+        doc.removeEventListener('pointerdown', lift, true);
+        window.removeEventListener('wheel', lift, true);
+        window.removeEventListener('touchmove', lift, true);
+      }
+
+      doc.addEventListener('keydown', lift, true);
+      doc.addEventListener('pointerdown', lift, true);
+      window.addEventListener('wheel', lift, true);
+      window.addEventListener('touchmove', lift, true);
+
+      items.forEach(function (li, n) { at(340 + n * 105, function () { li.className = 'on'; }); });
+
+      var last = 340 + items.length * 105;
+      at(last + 190, function () {
+        /* Computed, not asserted — the page should not claim a clean
+           policy it has not just checked. */
+        out.textContent = items.length + ' directives enforced \u00B7 ' +
+          (/unsafe-/.test(policy) ? 'exceptions present' : 'no exceptions');
+        out.className = 'wc-out on';
+      });
+      at(last + 640, lift);
+    } catch (e) {
+      clearTimeout(bail);
+      el.hidden = true;
+    }
+  }
+
+  runWelcome(false);
+
   /* ── derived career numbers ──────────────────────────────── */
 
   var START = new Date(2018, 10, 5);           // 2018-11-05, first tech role
@@ -466,6 +572,20 @@
     var NODE_FADE = 260;
     var introSpan = 380, introStart = 0, introDone = false;
 
+    /* When the welcome overlay lifts, replay the arrival so the field forms
+       as the page is revealed rather than having assembled unseen behind an
+       opaque panel.
+
+       Deliberately a replay and not a gate. A gate would have to suppress
+       the graph until a signal arrived, and any path where that signal is
+       missed leaves the page with no background at all. Here a missed
+       signal only means the field has already formed — never blank. */
+    doc.addEventListener('tk:welcomed', function () {
+      introDone = false;
+      introStart = 0;
+      seed();
+    }, { once: true });
+
     function easeOut(t) { var u = 1 - t; return 1 - u * u * u; }
 
     function size() {
@@ -535,7 +655,7 @@
       if (!introDone) {
         var now = window.performance && performance.now ? performance.now() : +new Date();
         if (!introStart) introStart = now;
-        var el = now - introStart;
+        var el = introStart ? now - introStart : 0;
         /* Edges start resolving a third of the way through the arrival
            wave, so the beat reads as nodes-then-web rather than both. */
         lp = Math.min(1, Math.max(0, (el - introSpan * 0.35) / 420));
@@ -741,8 +861,13 @@
           'contact         how to reach me',
           'goto <section>  ' + IDS.join('|'),
           'ls, cat <file>  look around',
+          'welcome         replay the policy attestation',
           'clear           clear this output'
         ], 'dim');
+      },
+      welcome: function () {
+        print('replaying policy attestation', 'dim');
+        runWelcome(true);
       },
       whoami: function () {
         print('tal katz — senior security engineer, wiz (google)', 'acc');
