@@ -234,6 +234,19 @@ a, #nav button, .keys-close { -webkit-tap-highlight-color: transparent; }
 .mh-meta > div.arming dd { opacity: 0; }
 .mh-meta > div.armed dd { opacity: 1; transition: opacity var(--dur-3) var(--ease-out); }
 
+/* ── entry sequence ───────────────────────────────────────────
+   The name and role rise as the graph behind them assembles and the
+   status cells resolve below — one gesture on one clock. .mh-enter is
+   added by JS and only when motion is allowed, so no-JS, failed-JS and
+   reduced-motion loads all land on the finished state with no rule to
+   undo. Nothing here gates reading; it is opacity and transform only. */
+@keyframes mhRise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+.js .masthead.mh-enter h1 { animation: mhRise 380ms var(--ease-out) both; }
+.js .masthead.mh-enter .mh-role { animation: mhRise 380ms 70ms var(--ease-out) both; }
+
 /* ─── nav ────────────────────────────────────────────────────
    Unnumbered and unboxed. The page is one continuous scroll, so a
    numbered tab strip would imply a sequence that no longer exists. */
@@ -608,6 +621,16 @@ kbd {
   /* Same failure class: the masthead values fade in under JS, so a print
      taken mid-arm emits empty cells beside every label. */
   .mh-meta > div dd { opacity: 1 !important; }
+
+  /* Paper never runs animation, so anything caught mid-flight must land
+     on its finished frame rather than printing at opacity 0. This is the
+     general form of the two blank-content bugs fixed above; it stops the
+     next animated element from reintroducing them. */
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .masthead h1, .mh-role { opacity: 1 !important; transform: none !important; }
 
   body { padding: 0 !important; font: 400 10.5pt/1.5 var(--sans); }
   #app { max-width: none; padding: 0; }

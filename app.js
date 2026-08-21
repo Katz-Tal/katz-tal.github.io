@@ -74,9 +74,17 @@
      resolve in sequence, inline, over roughly half a second. */
 
   (function bringUp() {
-    var cells = Array.prototype.slice.call(doc.querySelectorAll('.mh-meta > div'));
+    if (reduced) return;
 
-    if (reduced || !cells.length) return;
+    /* The name and role rise on the same clock as the graph behind them
+       and the cells below, so the load reads as one gesture rather than
+       three unrelated fades. Applied from JS, never in the markup — a
+       failed or disabled script leaves the finished state on screen. */
+    var mh = doc.querySelector('.masthead');
+    if (mh) mh.classList.add('mh-enter');
+
+    var cells = Array.prototype.slice.call(doc.querySelectorAll('.mh-meta > div'));
+    if (!cells.length) return;
 
     cells.forEach(function (c) { c.classList.add('arming'); });
     cells.forEach(function (c, i) {
@@ -447,6 +455,19 @@
     var LINK = 190;
     var MAX_NODES = 92;
 
+    /* Entry sequence. The field does not simply exist on load — it
+       discovers itself outward from behind the name, edges knitting in
+       only once both their endpoints have landed, and a single node
+       arriving last and flaring: the anomaly the rest of the page is
+       about. It never gates reading; the CV is complete on first paint
+       and this happens behind it. Runs once — a later resize reseeds
+       without replaying it, and a tab left hidden through it simply
+       finds it already finished. */
+    var NODE_FADE = 260;
+    var introSpan = 380, introStart = 0, introDone = false;
+
+    function easeOut(t) { var u = 1 - t; return 1 - u * u * u; }
+
     function size() {
       var dpr = Math.min(window.devicePixelRatio || 1, 2);
       var nw = cv.clientWidth, nh = cv.clientHeight;
@@ -463,21 +484,70 @@
 
     function seed() {
       var n = Math.max(14, Math.min(MAX_NODES, Math.round(w * h / 13500)));
+      var narrow = w < 640;
+      introSpan = narrow ? 240 : 380;
+
+      /* The wavefront starts behind the name rather than at a corner, so
+         the field reads as radiating from the identity it belongs to. */
+      var ox = w * (narrow ? 0.30 : 0.18), oy = h * 0.22;
+      var maxD = Math.sqrt(w * w + h * h) || 1;
+
       nodes = [];
       for (var i = 0; i < n; i++) {
+        var x = Math.random() * w, y = Math.random() * h;
+        var dx = x - ox, dy = y - oy;
+        var d = Math.sqrt(dx * dx + dy * dy) / maxD;
         nodes.push({
-          x: Math.random() * w,
-          y: Math.random() * h,
+          x: x,
+          y: y,
           vx: (Math.random() - 0.5) * 0.22,
           vy: (Math.random() - 0.5) * 0.22,
           hub: Math.random() < 0.16,
-          flare: 0
+          flare: 0,
+          delay: introDone ? 0 : d * introSpan + Math.random() * 70,
+          born: introDone ? 1 : 0
         });
       }
+      if (!introDone) markAnomaly();
+    }
+
+    /* Among the last arrivals, take the one nearest the open right-hand
+       field — a flare in a corner is a flare nobody sees. */
+    function markAnomaly() {
+      var tx = w * 0.72, ty = h * 0.45;
+      var late = 0, i;
+      for (i = 0; i < nodes.length; i++) if (nodes[i].delay > late) late = nodes[i].delay;
+      var best = null, bestD = Infinity;
+      for (i = 0; i < nodes.length; i++) {
+        var p = nodes[i];
+        if (p.delay < late * 0.75) continue;
+        var dx = p.x - tx, dy = p.y - ty;
+        var d = dx * dx + dy * dy;
+        if (d < bestD) { bestD = d; best = p; }
+      }
+      if (best) best.anomaly = true;
     }
 
     function draw() {
       ctx.clearRect(0, 0, w, h);
+
+      var lp = 1;
+      if (!introDone) {
+        var now = window.performance && performance.now ? performance.now() : +new Date();
+        if (!introStart) introStart = now;
+        var el = now - introStart;
+        /* Edges start resolving a third of the way through the arrival
+           wave, so the beat reads as nodes-then-web rather than both. */
+        lp = Math.min(1, Math.max(0, (el - introSpan * 0.35) / 420));
+        var settled = true;
+        for (var q = 0; q < nodes.length; q++) {
+          var np = nodes[q];
+          np.born = Math.min(1, Math.max(0, (el - np.delay) / NODE_FADE));
+          if (np.born < 1) settled = false;
+          else if (np.anomaly && !np.fired) { np.fired = true; np.flare = 1; }
+        }
+        if (settled && lp >= 1) introDone = true;
+      }
 
       ctx.lineWidth = 1;
       for (var i = 0; i < nodes.length; i++) {
@@ -488,7 +558,8 @@
           var d2 = dx * dx + dy * dy;
           if (d2 > LINK * LINK) continue;
           var t = 1 - Math.sqrt(d2) / LINK;
-          var alpha = t * t * 0.5;
+          var alpha = t * t * 0.5 * lp * (a.born < b.born ? a.born : b.born);
+          if (alpha < 0.004) continue;
           var hot = a.flare > 0 || b.flare > 0;
           ctx.strokeStyle = hot
             ? 'rgba(255,59,48,' + (alpha + 0.2).toFixed(3) + ')'
@@ -509,16 +580,20 @@
         if (p.y < -20) p.y = h + 20; else if (p.y > h + 20) p.y = -20;
 
         if (p.flare > 0) p.flare -= 0.012;
-        else if (Math.random() < 0.00035) p.flare = 1;
+        /* Ambient flares only once the arrival is over — otherwise they
+           compete with the anomaly and the beat is lost. */
+        else if (introDone && Math.random() < 0.00035) p.flare = 1;
 
-        var r = p.hub ? 2.1 : 1.3;
+        if (p.born <= 0) continue;
+        var e = easeOut(p.born);
+        var r = (p.hub ? 2.1 : 1.3) * (0.4 + 0.6 * e);
         if (p.flare > 0) {
-          ctx.fillStyle = 'rgba(255,59,48,' + (0.35 + p.flare * 0.6).toFixed(3) + ')';
+          ctx.fillStyle = 'rgba(255,59,48,' + ((0.35 + p.flare * 0.6) * e).toFixed(3) + ')';
           ctx.beginPath();
           ctx.arc(p.x, p.y, r + p.flare * 3.4, 0, 6.2832);
           ctx.fill();
         }
-        ctx.fillStyle = p.hub ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.55)';
+        ctx.fillStyle = 'rgba(255,255,255,' + ((p.hub ? 0.9 : 0.55) * e).toFixed(3) + ')';
         ctx.beginPath();
         ctx.arc(p.x, p.y, r, 0, 6.2832);
         ctx.fill();
