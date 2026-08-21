@@ -135,7 +135,7 @@ a, #nav button, .keys-close { -webkit-tap-highlight-color: transparent; }
   font: 400 .66rem/1 var(--mono);
   letter-spacing: .3em; text-transform: uppercase; color: var(--dim);
 }
-@media (max-width: 62rem) { #rail { display: none; } }
+@media screen and (max-width: 62rem) { #rail { display: none; } }
 
 /* ─── pointer: your mouse as a monitored process ─────────────
    The OS arrow is hidden only once JS is running (.cursorless is added
@@ -264,7 +264,7 @@ a, #nav button, .keys-close { -webkit-tap-highlight-color: transparent; }
 
 .wide-note { display: none; }
 
-@media (max-width: 62rem) {
+@media screen and (max-width: 62rem) {
   .wide-note {
     display: block;
     margin: 1.25rem 0 0;
@@ -517,7 +517,7 @@ kbd {
    ~80px wide, and at 320px ~22px. Below 46rem the fixed columns
    collapse and each row stacks label-over-value. */
 
-@media (max-width: 46rem) {
+@media screen and (max-width: 46rem) {
   /* Reclaim horizontal space. Nested indents (#app padding, then the
      card's rule + padding, then the list's padding) were eating ~19% of
      a 360px screen before a single character, leaving ~36 characters
@@ -536,6 +536,11 @@ kbd {
   .stats { font-size: .76rem; gap: .3rem 1rem; }
   .sec-head h2 { font-size: .68rem; letter-spacing: .16em; }
   .rail-sec { display: none; }
+
+  /* iOS Safari zooms the viewport when a focused input is under 16px, and
+     does not zoom back out on blur. The console is the first thing people
+     tap, so it pays the 16px tax; everything around it stays at scale. */
+  #cmd { font-size: 16px; }
 
   /* alert feed: severity and dates share line one, content runs full width */
   .mission {
@@ -567,7 +572,7 @@ kbd {
   .prompt { font-size: .68rem; }
 }
 
-@media (max-width: 26rem) {
+@media screen and (max-width: 26rem) {
   #app { padding-inline: .8rem; }
   .card { padding-left: .7rem; }
   .mission ul, .bullets { padding-left: .9rem; }
@@ -594,6 +599,15 @@ kbd {
   /* interface has no meaning on paper */
   #fx, #ledger, #rail, #nav, #ptr, #keys,
   .wide-note, .kb-hint, .skip-link, #console { display: none !important; }
+
+  /* Content must never depend on an animation having run. A print fired
+     before the reveal observer resolves — Cmd-P on a cold load, or any
+     headless print path — would otherwise emit blank panels and silently
+     drop most of the CV. */
+  .js .panel.reveal { opacity: 1 !important; transform: none !important; }
+  /* Same failure class: the masthead values fade in under JS, so a print
+     taken mid-arm emits empty cells beside every label. */
+  .mh-meta > div dd { opacity: 1 !important; }
 
   body { padding: 0 !important; font: 400 10.5pt/1.5 var(--sans); }
   #app { max-width: none; padding: 0; }

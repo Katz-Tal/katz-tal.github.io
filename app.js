@@ -306,7 +306,12 @@
   (function pointer() {
     var el = doc.getElementById('ptr');
     if (!el || reduced) return;
-    if (!window.matchMedia('(hover: hover)').matches) return;
+    /* Must match the query that hides #ptr in CSS. Gating on hover alone let
+       a hover-capable coarse-pointer device (mouse on Android, Samsung DeX,
+       some touch laptops) run this module, hide the OS cursor via .cursorless,
+       and then have CSS hide the crosshair meant to replace it — leaving the
+       visitor with no pointer at all. */
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
     var mark = el.querySelector('.ptr-mark');
     var cv = doc.getElementById('ptrSpark');
@@ -444,10 +449,16 @@
 
     function size() {
       var dpr = Math.min(window.devicePixelRatio || 1, 2);
-      w = cv.clientWidth; h = cv.clientHeight;
+      var nw = cv.clientWidth, nh = cv.clientHeight;
+      /* Mobile browsers fire resize when the URL bar collapses during scroll.
+         Reseeding on that teleports all 92 nodes while someone is reading, so
+         only a real width change — or a height change too large to be a
+         toolbar — earns a fresh layout. The backing store rescales either. */
+      var reflow = !nodes.length || Math.abs(nw - w) > 2 || Math.abs(nh - h) > 120;
+      w = nw; h = nh;
       cv.width = w * dpr; cv.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      seed();
+      if (reflow) seed();
     }
 
     function seed() {
